@@ -218,7 +218,7 @@ class bullet{
 
 
 		for(let i = 0; i < walls.length; i++){
-			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls[i].x,walls[i].y,3,3])
+			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls[i].x,walls[i].y,2,2])
 			if(c[0] != false || c[1] != false || c[2] != false || c[3] != false){
 			walls[i].hp -= 20
 		this.vx *= 0.5
