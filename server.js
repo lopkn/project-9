@@ -5,10 +5,10 @@ class wall{
 		this.hp = 100
 	}
 	draw(){
-		map.push([this.x,this.y,"#F0F0F0"])
-		map.push([this.x+1,this.y,"#FFFFFF"])
-		map.push([this.x,this.y+1,"#FFFFFF"])
-		map.push([this.x+1,this.y+1,"#F0F0F0"])
+		map.push([this.x,this.y,"#F0F0F055"])
+		map.push([this.x+1,this.y,"#FFFFFF55"])
+		map.push([this.x,this.y+1,"#FFFFFF55"])
+		map.push([this.x+1,this.y+1,"#F0F0F055"])
 	}
 }
 
@@ -232,11 +232,16 @@ class bullet{
 			if(distance(this.x,this.y,walls[i].x,walls[i].y)<30){
 			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls[i].x,walls[i].y,1.9999,1.9999])
 			if(c != "noCol"){
-
-				if(c[0][2] == "shortest"){this.vx *= -1; this.x = c[0][0]; this.y = c[0][1]}
-				if(c[1][2] == "shortest"){this.vy *= -1; this.x = c[1][0]; this.y = c[1][1]}
-				if(c[2][2] == "shortest"){this.vy *= -1; this.x = c[2][0]; this.y = c[2][1]}
-				if(c[3][2] == "shortest"){this.vx *= -1; this.x = c[3][0]; this.y = c[3][1]}
+				for(let i = 0; i < 4; i++){
+					if(c[i] != false){
+						console.log(c[i])
+						map.push([c[i][0],c[i][1],"#FF0000"])
+					}
+				}
+				if(c[0][2] == "shortest"){this.vx *= -1; this.x = c[0][0]; this.y = c[0][1];map.push([this.x,this.y,"#00FF00"])}
+				if(c[1][2] == "shortest"){this.vy *= -1; this.x = c[1][0]; this.y = c[1][1];map.push([this.x,this.y,"#00FF00"])}
+				if(c[2][2] == "shortest"){this.vy *= -1; this.x = c[2][0]; this.y = c[2][1];map.push([this.x,this.y,"#00FF00"])}
+				if(c[3][2] == "shortest"){this.vx *= -1; this.x = c[3][0]; this.y = c[3][1];map.push([this.x,this.y,"#00FF00"])}
 
 			walls[i].hp -= 20
 		this.vx *= 0.5
@@ -369,7 +374,7 @@ function doSomething(){
 
 setInterval(function(){ 
     doSomething()
-}, 100/6);
+}, 200/6);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -384,6 +389,15 @@ function dline(ie){
   line(ie[0][0],ie[0][1],ie[1][0],ie[1][1])
 }
 
+function masterLineCollidor(line1,line2){
+  let c = calculate(makeEquation(line1),makeEquation(line2),line1,line2)
+  
+  
+  if(c != "inf"){c.push(pointOnLine(line1,line2,c));return(c)} else{return(false)}
+}
+function dline(ie){
+  line(ie[0][0],ie[0][1],ie[1][0],ie[1][1])
+}
 function boxCol(line,box){
   let out = []
   let blines = []
@@ -410,17 +424,16 @@ function boxCol(line,box){
 
 	if(out2.length == 1){out[out2[0][0]][2] = "shortest"}else{
 
-
 	for(let i = 0; i < out2.length; i++){
 		for(let j = 0; j < out2.length; j++){
-			if(i == j){break}
-			if(out2[i][1] > out2[j][i]){break}
+			if(i == j){continue}
+			if(out2[i][1] > out2[j][i]){continue}
 			fout = out2[i][0]	
+
 		}
-	}
+	}}
 
 out[fout][2] = "shortest"
-console.log(out2,fout)}
 
 
   return(out)
