@@ -2,6 +2,7 @@ class playerc{
   constructor(){
     this.x = 0
     this.y = 0
+    this.status = "normal"
   }
 }
 var playerID
@@ -24,6 +25,7 @@ socket.on('returnedMousePos',returnedmouse)
 function updatePlayer(e){
   player.x = e[0]
   player.y = e[1]
+  player.status = e[2]
 }
 
 function message(m){
@@ -182,7 +184,7 @@ document.addEventListener('mousedown', (event) => {
   if(reloaded){
     let m = mouseNormalVector()
 
-    socket.emit('fireBullet',[player.x,player.y,m[0]*6,m[1]*6])
+    socket.emit('fireBullet',[player.x,player.y,m[0]*6,m[1]*6,playerID])
   }
 })
 

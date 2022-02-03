@@ -18,6 +18,7 @@ class player{
 		this.id = id
 		this.x = 0
 		this.y = 0
+		this.status = "normal"
 		this.direction = "up"
 		// this.Larm = 100
 		// this.Rarm = 100
@@ -26,7 +27,7 @@ class player{
 	}
 
 	relay(){
-		io.to(this.id).emit("updateData",[this.x,this.y])
+		io.to(this.id).emit("updateData",[this.x,this.y,this.status])
 		io.to(this.id).emit('frame',printables(map,this))
 		// io.to(this.id).emit('players',players)
 	}
@@ -191,6 +192,13 @@ function linePoints(p1,p2){
 }
 ///////////////////////////////////////////////////////////
 
+function inarr(e,arr){
+	for(let i = 0; i < arr.length; i++){
+		if(arr[i] == e){return(true)}
+	}
+	return(false)
+}
+
 
 function distance(x1,y1,x2,y2) {
 	let a = x2-x1
@@ -202,7 +210,8 @@ function velocityOf(x,y){
 }
 
 class bullet{
-	constructor(x,y,vx,vy){
+	constructor(x,y,vx,vy,ids){
+		this.ids = [ids]
 		this.x = x
 		this.y = y
 		this.vx = vx
@@ -225,6 +234,48 @@ class bullet{
 		if(this.life < 70){
 			this.trail.splice(0,1)
 		}
+
+
+
+
+
+
+
+
+		for(let i = 0; i < players.length; i++){
+			console.log(inarr(players[i].id,this.ids),players[i].id,this.ids)
+			if(distance(this.x,this.y,players[i].x,players[i].y)<30 && inarr(players[i].id,this.ids) === false){
+			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[players[i].x-1,players[i].y-1,2.9999,2.9999])
+			if(c != "noCol"){
+				for(let i = 0; i < 4; i++){
+					if(c[i] != false){
+						map.push([c[i][0],c[i][1],"#FF0000"])
+					}
+				}
+				if(c[0][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
+				if(c[1][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
+				if(c[2][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
+				if(c[3][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
+
+			players[i].hp -= 20
+			players[i].x += Math.round(this.vx * 0.5)
+			players[i].y += Math.round(this.vy * 0.5)
+		this.vx *= 0.8
+		this.vy *= 0.8}
+	}
+		}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -336,7 +387,7 @@ function newConnection(socket){
 }
 
 function createBullet(e){
-	bullets.push(new bullet(e[0],e[1],e[2],e[3]))
+	bullets.push(new bullet(e[0],e[1],e[2],e[3],e[4]))
 }
 
 function returnMouse(e){
