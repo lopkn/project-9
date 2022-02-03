@@ -229,6 +229,14 @@ function rectAtCoords(x,y,col){
   rect(x*10,y*10,10,10)
 }
 
+
+
+function velocityOf(x,y){
+  return(Math.abs(x)+Math.abs(y))
+}
+
+
+
 function toGridNum(x,y,e){
   return(x + y * e)
 }

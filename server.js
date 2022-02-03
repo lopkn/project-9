@@ -190,6 +190,17 @@ function linePoints(p1,p2){
   return(out)
 }
 ///////////////////////////////////////////////////////////
+
+
+function distance(x1,y1,x2,y2) {
+	let a = x2-x1
+	let b = y2-y1
+  return(Math.sqrt(a*a+b*b))
+}
+function velocityOf(x,y){
+  return(Math.abs(x)+Math.abs(y))
+}
+
 class bullet{
 	constructor(x,y,vx,vy){
 		this.x = x
@@ -201,7 +212,7 @@ class bullet{
 	}
 
 	updateNDraw(){
-		this.life -= 1
+		this.life -= (4-velocityOf(this.vx,this.vy)/2)
 		this.vx *= 0.99
 		this.vy *= 0.99
 		if(this.life > 0){
@@ -218,11 +229,19 @@ class bullet{
 
 
 		for(let i = 0; i < walls.length; i++){
-			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls[i].x,walls[i].y,2,2])
-			if(c[0] != false || c[1] != false || c[2] != false || c[3] != false){
+			if(distance(this.x,this.y,walls[i].x,walls[i].y)<30){
+			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls[i].x,walls[i].y,1.9999,1.9999])
+			if(c != "noCol"){
+
+				if(c[0][2] == "shortest"){this.vx *= -1; this.x = c[0][0]; this.y = c[0][1]}
+				if(c[1][2] == "shortest"){this.vy *= -1; this.x = c[1][0]; this.y = c[1][1]}
+				if(c[2][2] == "shortest"){this.vy *= -1; this.x = c[2][0]; this.y = c[2][1]}
+				if(c[3][2] == "shortest"){this.vx *= -1; this.x = c[3][0]; this.y = c[3][1]}
+
 			walls[i].hp -= 20
 		this.vx *= 0.5
 		this.vy *= 0.5}
+	}
 		}
 
 
@@ -378,6 +397,32 @@ function boxCol(line,box){
   	let ccc = masterLineCollidor(line,blines[i])
   	if(ccc[2]!=false){out.push(ccc)}else{out.push(false)}
   }
+	if(out[0] ===false && out[1] ===false && out[2] === false && out[3] === false){
+		return("noCol")
+	}
+	let out2 = []
+	let fout = 0
+	for(let i = 0; i < 4; i++){
+		if(out[i] != false){
+			out2.push([i,distance(line[0][0],line[0][1],out[i][0],out[i][1])])
+		}
+	}
+
+	if(out2.length == 1){out[out2[0][0]][2] = "shortest"}else{
+
+
+	for(let i = 0; i < out2.length; i++){
+		for(let j = 0; j < out2.length; j++){
+			if(i == j){break}
+			if(out2[i][1] > out2[j][i]){break}
+			fout = out2[i][0]	
+		}
+	}
+
+out[fout][2] = "shortest"
+console.log(out2,fout)}
+
+
   return(out)
 }
 
