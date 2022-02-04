@@ -182,12 +182,14 @@ document.addEventListener('keyup', (event) => {
   currentlyPressedKeys.splice(inListR(name,currentlyPressedKeys),1)
 }, false);
 
-reloaded = true
+var reloaded = 0
+
+
 
 document.addEventListener('mousedown', (event) => {
-  if(reloaded && player.status != "dead"){
+  if(reloaded <= 0 && player.status != "dead"){
     let m = mouseNormalVector()
-
+    reloaded += 30
     socket.emit('fireBullet',[player.x,player.y,m[0]*6,m[1]*6,playerID])
   }
 })
@@ -265,8 +267,11 @@ function returnedmouse(e){
 
 
 function repeat(){
+  if(reloaded > 0){
+    reloaded -= 1
+  }
   let m = mouseToPos()
-  rectAtCoords(m[0],m[1],"rgba(255,0,0,0.5)")
+  rectAtCoords(m[0],m[1],"rgba(155,0,255,0.5)")
   let mn = mouseNormalVector()
   let p = linePoints([0,0],[mn[0]*5,mn[1]*5])
   for(let i = 0; i< p.length; i++){

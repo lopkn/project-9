@@ -12,6 +12,35 @@ class wall{
 	}
 }
 
+
+class bloodParticle{
+	constructor(x,y,vx,vy,n){
+		this.x = x
+		this.y = y
+		this.vx = vx * 0.4
+		this.vy = vy * 0.4
+		this.life = Math.random() * 100 + n
+		this.limlife = Math.random() * 30 + 5
+	}
+	draw(){
+		this.x += this.vx
+		this.y += this.vy
+		this.vx *= 0.8
+		this.vy *= 0.8
+		this.life -= 0.3
+		this.limlife -= 1
+
+		if(this.life > 100 && this.life*this.life > Math.random()* 1116850 && this.limlife < 0){
+			this.life /= 2
+			blood.push(new bloodParticle(this.x,this.y,Math.random() * 2 - 1, Math.random() * 2 - 1))
+			blood[blood.length-1].life = this.life
+		}
+
+		map.push([Math.round(this.x),Math.round(this.y),"rgba(255,50,50,"+this.life/255+")"])
+	}
+}
+
+
 class flash{
 	constructor(x,y){
 		this.x = x
@@ -35,6 +64,9 @@ class player{
 	}
 
 	relay(){
+		this.hp += 0.01
+		if(this.hp < 0){ this.hp = -1}
+		if(this.hp < 70 && this.hp < Math.random()*70){blood.push(new bloodParticle(this.x,this.y,Math.random()*2.5-1.25,Math.random()*2.5-1.25,0))}
 		if(this.hp < 50){this.status = "concussion"}
 		if(this.hp < 0){this.status = "dead";}
 		io.to(this.id).emit("updateData",[this.x,this.y,this.status])
@@ -258,9 +290,11 @@ class bullet{
 				if(c[2][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
 				if(c[3][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
 
-			players[i].hp -= 2
-			players[i].x += Math.round(this.vx * 0.5)
-			players[i].y += Math.round(this.vy * 0.5)
+			players[i].hp -= velocityOf(this.vx,this.vy)
+		for(let k = 0; k < Math.floor((players[i].hp/100) * velocityOf(this.vx,this.vy)); k++){
+			blood.push(new bloodParticle(players[i].x,players[i].y,this.vx * Math.random() * 3, this.vy*3 * Math.random(),350))}
+			players[i].x += Math.round(this.vx *Math.abs(players[i].hp) * 0.005)
+			players[i].y += Math.round(this.vy *Math.abs(players[i].hp) * 0.005)
 		this.vx *= 0.8
 		this.vy *= 0.8}
 	}
@@ -363,6 +397,9 @@ if(this.life > 0){
 var bullets = []
 var players = []
 var walls = []
+var blood = []
+
+
 var express = require('express');
 var app = express();
 var server = app.listen(3000);
@@ -435,7 +472,7 @@ function returnMouse(e){
 
 function doSomething(){
 		map = []
-
+		console.log(blood.length)
 		if(bullets.length > 0){
 			map.push([0,0,"#FF00FF"])
 		}
@@ -455,6 +492,11 @@ function doSomething(){
 		if(walls[i].hp <= 0){walls.splice(i,1)}else{
 		walls[i].draw()}
 	}
+
+	for(let i = blood.length-1; i > -1; i--){
+				if(blood[i].life <= 0){blood.splice(i,1)}else{
+		blood[i].draw()}
+}
 	for(let i = 0; i < players.length; i++){
 		let ii = players[i].retDraw()
 		for(let j = 0; j < 9; j++){
@@ -473,6 +515,19 @@ setInterval(function(){
 }, 200/6);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 function masterLineCollidor(line1,line2){
