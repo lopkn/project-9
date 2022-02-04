@@ -12,12 +12,20 @@ class wall{
 	}
 }
 
+class flash{
+	constructor(x,y){
+		this.x = x
+		this.y = y
+		this.life = 3
+	}
 
+}
 class player{
 	constructor(id){
 		this.id = id
 		this.x = 0
 		this.y = 0
+		this.hp = 100
 		this.status = "normal"
 		this.direction = "up"
 		// this.Larm = 100
@@ -27,11 +35,14 @@ class player{
 	}
 
 	relay(){
+		if(this.hp < 50){this.status = "concussion"}
+		if(this.hp < 0){this.status = "dead";}
 		io.to(this.id).emit("updateData",[this.x,this.y,this.status])
 		io.to(this.id).emit('frame',printables(map,this))
 		// io.to(this.id).emit('players',players)
 	}
 	process(e){
+		if(this.status != "dead"){
 		if(e == "w"){
 			this.y -= 2
 			this.direction = "up"
@@ -49,7 +60,7 @@ class player{
 		} else if(e[1] == "e"){
 			walls.push(new wall(e[2]+e[4][0]-40,e[3]+e[4][1]-40))
 		}
-	}
+	}}
 	drawLb(){
 		if(this.direction == "up"){
 			return([this.x-1,this.y,"#FFFF00"])
@@ -224,16 +235,7 @@ class bullet{
 		this.life -= (4-velocityOf(this.vx,this.vy)/2)
 		this.vx *= 0.99
 		this.vy *= 0.99
-		if(this.life > 0){
 
-		let l = linePoints([Math.floor(this.x + this.vx), Math.floor(this.y + this.vy)],[Math.floor(this.x),Math.floor(this.y)])
-		for(let i = 0; i < l.length; i++){
-			this.trail.push(l[i])
-		}
-		this.trail.push([this.x,this.y])}
-		if(this.life < 70){
-			this.trail.splice(0,1)
-		}
 
 
 
@@ -243,7 +245,6 @@ class bullet{
 
 
 		for(let i = 0; i < players.length; i++){
-			console.log(inarr(players[i].id,this.ids),players[i].id,this.ids)
 			if(distance(this.x,this.y,players[i].x,players[i].y)<30 && inarr(players[i].id,this.ids) === false){
 			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[players[i].x-1,players[i].y-1,2.9999,2.9999])
 			if(c != "noCol"){
@@ -257,7 +258,7 @@ class bullet{
 				if(c[2][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
 				if(c[3][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
 
-			players[i].hp -= 20
+			players[i].hp -= 2
 			players[i].x += Math.round(this.vx * 0.5)
 			players[i].y += Math.round(this.vy * 0.5)
 		this.vx *= 0.8
@@ -270,31 +271,62 @@ class bullet{
 
 
 
-
-
-
-
-
-
-
+		let walls2 = []
 
 
 		for(let i = 0; i < walls.length; i++){
-			if(distance(this.x,this.y,walls[i].x,walls[i].y)<30){
-			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls[i].x,walls[i].y,1.9999,1.9999])
+			let tempd = distance(this.x,this.y,walls[i].x,walls[i].y)
+			if(tempd<30 && walls2.length < 1){
+				walls2.push([walls[i],tempd])
+				continue
+			}
+			if(tempd<30){
+				for(let j = 0; j < walls2.length; j++){
+					if(tempd < walls2[j][1]){
+						walls2.splice(j,0,[walls[i],tempd])
+						break
+					}
+				}
+			}
+		}
+
+		let walls3 = []
+		for(let i = 0; i < walls2.length; i++){
+			walls3.push(walls2[i][0])
+		}
+
+		// console.log(walls3)
+
+
+
+
+		for(let i = 0; i < walls3.length; i++){
+			if(distance(this.x,this.y,walls3[i].x,walls3[i].y)<30){
+			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls3[i].x,walls3[i].y,1.9999999999999,1.9999999999999])
 			if(c != "noCol"){
+				this.ids = []
 				for(let i = 0; i < 4; i++){
 					if(c[i] != false){
 						console.log(c[i])
 						map.push([c[i][0],c[i][1],"#FF0000"])
 					}
 				}
-				if(c[0][2] == "shortest"){this.vx *= -1; this.x = c[0][0]; this.y = c[0][1];map.push([this.x,this.y,"#00FF00"])}
-				if(c[1][2] == "shortest"){this.vy *= -1; this.x = c[1][0]; this.y = c[1][1];map.push([this.x,this.y,"#00FF00"])}
-				if(c[2][2] == "shortest"){this.vy *= -1; this.x = c[2][0]; this.y = c[2][1];map.push([this.x,this.y,"#00FF00"])}
-				if(c[3][2] == "shortest"){this.vx *= -1; this.x = c[3][0]; this.y = c[3][1];map.push([this.x,this.y,"#00FF00"])}
-
-			walls[i].hp -= 20
+				let ta = "E"
+				let tb = "E"
+				if(c[0][2] == "shortest"){this.vx *= -1; ta = c[0][0]; tb = c[0][1];map.push([this.x,this.y,"#00FF00"])}
+				if(c[1][2] == "shortest"){this.vy *= -1; ta = c[1][0]; tb = c[1][1];map.push([this.x,this.y,"#00FF00"])}
+				if(c[2][2] == "shortest"){this.vy *= -1; ta = c[2][0]; tb = c[2][1];map.push([this.x,this.y,"#00FF00"])}
+				if(c[3][2] == "shortest"){this.vx *= -1; ta = c[3][0]; tb = c[3][1];map.push([this.x,this.y,"#00FF00"])}
+						this.trail.push([this.x,this.y])
+						let l2 = linePoints([Math.floor(ta), Math.floor(tb)],[Math.floor(this.x),Math.floor(this.y)])
+		for(let i = 0; i < l2.length; i++){
+			this.trail.push(l2[i])
+		}
+		if(ta != "E"){
+				this.x = ta
+				this.y = tb
+}
+			walls3[i].hp -= 20
 		this.vx *= 0.5
 		this.vy *= 0.5}
 	}
@@ -304,9 +336,16 @@ class bullet{
 
 
 
+		if(this.life > 0){
 
-
-
+		let l = linePoints([Math.floor(this.x + this.vx), Math.floor(this.y + this.vy)],[Math.floor(this.x),Math.floor(this.y)])
+		for(let i = 0; i < l.length; i++){
+			this.trail.push(l[i])
+		}
+		this.trail.push([this.x,this.y])}
+		if(this.life < 70){
+			this.trail.splice(0,1)
+		}
 
 
 
@@ -396,6 +435,12 @@ function returnMouse(e){
 
 function doSomething(){
 		map = []
+
+		if(bullets.length > 0){
+			map.push([0,0,"#FF00FF"])
+		}
+
+
 	for(let i = bullets.length-1; i > -1; i--){
 		if(bullets[i].life <= 0){
 			bullets.splice(i,1)

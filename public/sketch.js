@@ -130,9 +130,13 @@ function linePoints(p1,p2){
 
 function drawGrid(gridmaxX,gridmaxY,inArray,size){
   if(inArray == "fdark"){
+    if(player.status == "normal"){tempC = "rgba(0,0,20,0.2)"}
+    if(player.status == "concussion"){tempC = "rgba(20,0,0,0.01)"}
+    if(player.status == "dead"){tempC = "rgba(30,0,0,0.005)"}
+
     for(let i = 0; i < gridmaxY; i++){
       for(let j = 0; j < gridmaxX; j++){
-            fill("rgba(0,0,20,0.2)")
+            fill(tempC)
             rect(j*size,i*size,size,size)
             // console.log("a")
         }
@@ -181,7 +185,7 @@ document.addEventListener('keyup', (event) => {
 reloaded = true
 
 document.addEventListener('mousedown', (event) => {
-  if(reloaded){
+  if(reloaded && player.status != "dead"){
     let m = mouseNormalVector()
 
     socket.emit('fireBullet',[player.x,player.y,m[0]*6,m[1]*6,playerID])
