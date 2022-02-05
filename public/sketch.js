@@ -5,6 +5,32 @@ class playerc{
     this.status = "normal"
   }
 }
+
+
+
+
+
+
+var fire = new Howl({
+  src: ['fire.mp3']
+});
+
+var ricochet = new Howl({
+  src: ['ricochet.mp3']
+});
+
+var shot = new Howl({
+  src: ['shot.mp3']
+});
+
+var ring = new Howl({
+  src: ['ring.wav'],
+  volume: 0.04
+});
+
+
+
+
 var playerID
 player = new playerc()
 
@@ -16,18 +42,30 @@ var mouseY = 0
 let currentlyPressedKeys = []
 
 socket = io.connect('/');
+
 socket.on('message',message)
 socket.on('frame',frame)
+socket.on('ring',playRing)
 socket.on('updateData',updatePlayer)
+socket.on('ricochet',playRicochet)
+socket.on('GotShot',gotShot)
 socket.on('returnedMousePos',returnedmouse)
 // socket.on('players',drawPlayers)
+function playRicochet(e){
+  setTimeout(function(){ricochet.play()}, 100);
 
+}
+function playRing(){
+  ring.play()
+}
 function updatePlayer(e){
   player.x = e[0]
   player.y = e[1]
   player.status = e[2]
 }
-
+function gotShot(){
+  shot.play()
+}
 function message(m){
     playerID = m
     console.log(m)
@@ -132,7 +170,7 @@ function drawGrid(gridmaxX,gridmaxY,inArray,size){
   if(inArray == "fdark"){
     if(player.status == "normal"){tempC = "rgba(0,0,20,0.2)"}
     if(player.status == "concussion"){tempC = "rgba(20,0,0,0.01)"}
-    if(player.status == "dead"){tempC = "rgba(30,0,0,0.005)"}
+    if(player.status == "dead"){tempC = "rgba(255,0,0,0.005)"}
 
     for(let i = 0; i < gridmaxY; i++){
       for(let j = 0; j < gridmaxX; j++){
@@ -190,6 +228,9 @@ document.addEventListener('mousedown', (event) => {
   if(reloaded <= 0 && player.status != "dead"){
     let m = mouseNormalVector()
     reloaded += 30
+
+
+fire.play();
     socket.emit('fireBullet',[player.x,player.y,m[0]*6,m[1]*6,playerID])
   }
 })

@@ -64,10 +64,11 @@ class player{
 	}
 
 	relay(){
-		this.hp += 0.01
+		if(this.hp < 100){
+		this.hp += 0.01}
 		if(this.hp < 0){ this.hp = -1}
 		if(this.hp < 70 && this.hp < Math.random()*70){blood.push(new bloodParticle(this.x,this.y,Math.random()*2.5-1.25,Math.random()*2.5-1.25,0))}
-		if(this.hp < 50){this.status = "concussion"}
+		if(this.hp < 50 && this.status != "concussion" && this.status != "dead"){this.status = "concussion"; io.to(this.id).emit('ring');}
 		if(this.hp < 0){this.status = "dead";}
 		io.to(this.id).emit("updateData",[this.x,this.y,this.status])
 		io.to(this.id).emit('frame',printables(map,this))
@@ -291,6 +292,7 @@ class bullet{
 				if(c[3][2] == "shortest"){map.push([this.x,this.y,"#00FF00"])}
 
 			players[i].hp -= velocityOf(this.vx,this.vy)
+		io.to(players[i].id).emit('GotShot');
 		for(let k = 0; k < Math.floor((players[i].hp/100) * velocityOf(this.vx,this.vy)); k++){
 			blood.push(new bloodParticle(players[i].x,players[i].y,this.vx * Math.random() * 3, this.vy*3 * Math.random(),350))}
 			players[i].x += Math.round(this.vx *Math.abs(players[i].hp) * 0.005)
@@ -338,6 +340,7 @@ class bullet{
 			if(distance(this.x,this.y,walls3[i].x,walls3[i].y)<30){
 			let c = boxCol([[this.x,this.y],[this.x+this.vx,this.y+this.vy]],[walls3[i].x,walls3[i].y,1.9999999999999,1.9999999999999])
 			if(c != "noCol"){
+				io.emit("ricochet",[this.x,this.y])
 				this.ids = []
 				for(let i = 0; i < 4; i++){
 					if(c[i] != false){
@@ -472,7 +475,6 @@ function returnMouse(e){
 
 function doSomething(){
 		map = []
-		console.log(blood.length)
 		if(bullets.length > 0){
 			map.push([0,0,"#FF00FF"])
 		}
