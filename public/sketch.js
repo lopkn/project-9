@@ -12,7 +12,8 @@ class playerc{
 
 
 var fire = new Howl({
-  src: ['fire.mp3']
+  src: ['fire.mp3'],
+  volume: 0.5
 });
 
 var ricochet = new Howl({
@@ -27,7 +28,7 @@ var ring = new Howl({
   src: ['ring.wav'],
   volume: 0.04
 });
-
+Howler.volume(0.5);
 
 
 
@@ -46,18 +47,38 @@ socket = io.connect('/');
 socket.on('message',message)
 socket.on('frame',frame)
 socket.on('ring',playRing)
+socket.on('fire',playFire)
 socket.on('updateData',updatePlayer)
 socket.on('ricochet',playRicochet)
 socket.on('GotShot',gotShot)
 socket.on('returnedMousePos',returnedmouse)
 // socket.on('players',drawPlayers)
 function playRicochet(e){
-  setTimeout(function(){ricochet.play()}, 100);
+  setTimeout(function(){
+    let t = (1500-Math.pow(distance(e[0],e[1],player.x,player.y),2))/1500
+    if(t > 0){
+    ricochet.volume(t);ricochet.play()
+    console.log(t)
+    }
+    }, 100);
 
 }
+
+function playFire(e){
+  setTimeout(function(){
+    let t = (991500-Math.pow(distance(e[0],e[1],player.x,player.y),2))/991500
+    if(t > 0){
+    fire.volume(t*(t*t));fire.rate(t+0.3);fire.play()
+    console.log(t)
+    }
+    }, distance(e[0],e[1],player.x,player.y));
+
+}
+
 function playRing(){
   ring.play()
 }
+
 function updatePlayer(e){
   player.x = e[0]
   player.y = e[1]
@@ -201,9 +222,10 @@ function inListR(inp,arr){
 KeyboardEvent.repeat = false
 document.addEventListener('keydown', (event) => {
   var name = event.key;
+  // currentlyPressedKeys = []
   if(inListR(name,currentlyPressedKeys)===false){
     currentlyPressedKeys.push(name)
-    console.log(name,currentlyPressedKeys)
+    // console.log(name,currentlyPressedKeys)
     let packet = []
     if(name != "e"){
     packet = [playerID,name]}

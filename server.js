@@ -463,11 +463,12 @@ function newConnection(socket){
         	}
         }
     });
-}
+
 
 function createBullet(e){
 	bullets.push(new bullet(e[0],e[1],e[2],e[3],e[4]))
-}
+	socket.broadcast.emit("fire",[e[0],e[1]])
+}}
 
 function returnMouse(e){
 	io.to(e[1]).emit("returnedMousePos",e[0])
@@ -514,7 +515,7 @@ function doSomething(){
 
 setInterval(function(){ 
     doSomething()
-}, 200/6);
+}, 800/6);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
